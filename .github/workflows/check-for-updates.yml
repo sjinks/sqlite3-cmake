@@ -41,11 +41,12 @@ jobs:
           fi
           echo "Current version: ${CURRENT_VERSION}" >> "${GITHUB_STEP_SUMMARY}"
           echo "New version: ${NEW_VERSION} (available at ${NEW_URL} with SHA3-256 hash ${NEW_HASH})" >> "${GITHUB_STEP_SUMMARY}"
-          if [ "${KEEP_GOING}" == "yes" ]; then
-            echo "🚀 Creating a pull request."
+          if [ "${KEEP_GOING}" = "yes" ]; then
+            echo "🚀 Creating a pull request." >> "${GITHUB_STEP_SUMMARY}"
           else
-            echo "😌 No update is necessary."
+            echo "😌 No update is necessary." >> "${GITHUB_STEP_SUMMARY}"
           fi
+          exit 0
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38 # v5.0.2
