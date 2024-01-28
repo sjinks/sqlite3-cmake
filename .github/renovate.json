@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "local>sjinks/.github:renovate-config"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^README\\.md$"],
+      "matchStrings": [
+        "https://github\\.com/(?<depName>[^{}()\\[\\]]+?)/releases/download/(?<currentValue>[^/]+?)/"
+      ],
+      "datasourceTemplate": "github-releases"
+    }
+  ]
+}

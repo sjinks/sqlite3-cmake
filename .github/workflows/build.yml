@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.type.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        type:
+          - name: Build shared library
+            cmake_args: -DBUILD_SHARED_LIBS=ON
+          - name: Build static library
+            cmake_args: -DBUILD_SHARED_LIBS=OFF
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.type.cmake_args }}
+
+      - name: Build
+        run: cmake --build build --config Release
