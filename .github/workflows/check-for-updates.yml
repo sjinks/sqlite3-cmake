@@ -33,7 +33,7 @@ jobs:
           echo "ℹ️ Current version is ${CURRENT_VERSION}."
           if [ "${CURRENT_VERSION}" != "${NEW_VERSION}" ]; then
             sed -i "s/set(SQLITE3_VERSION \"${CURRENT_VERSION}\")/set(SQLITE3_VERSION \"${NEW_VERSION}\")/" CMakeLists.txt
-            sed -i "s/set(SQLITE3_DOWNLOAD_URL \".*\")/set(SQLITE3_DOWNLOAD_URL \"${NEW_URL}\")/" CMakeLists.txt
+            sed -i "s!set(SQLITE3_DOWNLOAD_URL \".*\")!set(SQLITE3_DOWNLOAD_URL \"${NEW_URL}\")!" CMakeLists.txt
             sed -i "s/set(SQLITE3_SHA3_256 \".*\")/set(SQLITE3_SHA3_256 \"${NEW_HASH}\")/" CMakeLists.txt
             echo "KEEP_GOING=yes" >> "${GITHUB_ENV}"
           else
