@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
-project(sqlite3 VERSION 3.45.0 LANGUAGES C)
+
+set(SQLITE3_VERSION "3.45.0")
+set(SQLITE3_DOWNLOAD_URL "https://sqlite.org/2024/sqlite-amalgamation-3450000.zip")
+set(SQLITE3_SHA3_256 "ae8e3bc692b9672c01bb83111971a59de55485a9b3eac051b1c946e36dc401e2")
+
+project(sqlite3 VERSION ${SQLITE3_VERSION} LANGUAGES C)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;MinSizeRel")
@@ -37,7 +42,7 @@ include(CheckTypeSize)
 include(FetchContent)
 include(GNUInstallDirs)
 
-FetchContent_Declare(sqlite3_ext URL https://www.sqlite.org/2024/sqlite-amalgamation-3450000.zip URL_HASH SHA3_256=ae8e3bc692b9672c01bb83111971a59de55485a9b3eac051b1c946e36dc401e2)
+FetchContent_Declare(sqlite3_ext URL ${SQLITE3_DOWNLOAD_URL} URL_HASH SHA3_256=${SQLITE3_SHA3_256})
 FetchContent_MakeAvailable(sqlite3_ext)
 
 target_include_directories(sqlite3
