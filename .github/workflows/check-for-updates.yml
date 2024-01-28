@@ -1,0 +1,73 @@
+name: Update SQLite
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: Check for updates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Get latest SQLite version
+        run: |
+          CSV="$(wget -q https://sqlite.org/download.html -O - | grep -E 'sqlite-amalgamation-[0-9]+\.zip,')"
+          VERSION="$(echo "${CSV}" | awk -F, '{print $2}')"
+          URL="https://sqlite3.org/$(echo "${CSV}" | awk -F, '{print $3}')"
+          HASH="$(echo "${CSV}" | awk -F, '{print $5}')"
+          echo "NEW_VERSION=${VERSION}" >> "${GITHUB_ENV}"
+          echo "NEW_URL=${URL}" >> "${GITHUB_ENV}"
+          echo "NEW_HASH=${HASH}" >> "${GITHUB_ENV}"
+          echo "ℹ️ SQLite ${VERSION} is available at ${URL} with SHA3-256 hash ${HASH}."
+
+      - name: Update CMakeLists.txt
+        run: |
+          CURRENT_VERSION=$(grep -oP 'set\(SQLITE3_VERSION "\K[^"]+' CMakeLists.txt)
+          echo "ℹ️ Current version is ${CURRENT_VERSION}."
+          if [ "${CURRENT_VERSION}" != "${NEW_VERSION}" ]; then
+            sed -i "s/set(SQLITE3_VERSION \"${CURRENT_VERSION}\")/set(SQLITE3_VERSION \"${NEW_VERSION}\")/" CMakeLists.txt
+            sed -i "s/set(SQLITE3_DOWNLOAD_URL \".*\")/set(SQLITE3_DOWNLOAD_URL \"${NEW_URL}\")/" CMakeLists.txt
+            sed -i "s/set(SQLITE3_SHA3_256 \".*\")/set(SQLITE3_SHA3_256 \"${NEW_HASH}\")/" CMakeLists.txt
+            echo "KEEP_GOING=yes" >> "${GITHUB_ENV}"
+          else
+            echo "KEEP_GOING=no" >> "${GITHUB_ENV}"
+          fi
+          echo "Current version: ${CURRENT_VERSION}" >> "${GITHUB_STEP_SUMMARY}"
+          echo "New version: ${NEW_VERSION} (available at ${NEW_URL} with SHA3-256 hash ${NEW_HASH})" >> "${GITHUB_STEP_SUMMARY}"
+          if [ "${KEEP_GOING}" = "yes" ]; then
+            echo "🚀 Creating a pull request." >> "${GITHUB_STEP_SUMMARY}"
+          else
+            echo "😌 No update is necessary." >> "${GITHUB_STEP_SUMMARY}"
+          fi
+          exit 0
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38 # v5.0.2
+        id: cpr
+        with:
+          commit-message: "chore(deps): update SQLite from ${{ env.CURRENT_VERSION }} to ${{ env.NEW_VERSION }}"
+          title: "chore(deps): update SQLite from ${{ env.CURRENT_VERSION }} to ${{ env.NEW_VERSION }}"
+          body: |
+            This PR updates SQLite from ${{ env.CURRENT_VERSION }} to ${{ env.NEW_VERSION }}.
+
+            - [Download](https://sqlite.org/download.html)
+            - [Changelog](https://sqlite.org/changes.html)
+          branch: "update-sqlite-${{ env.NEW_VERSION }}"
+          labels: dependencies
+        if: env.KEEP_GOING == 'yes'
+
+      - name: Conclusion
+        if: env.KEEP_GOING == 'yes'
+        run: |
+          if [ ${{ steps.cpr.outputs.pull-request-number }} != "" ]; then
+            echo "ℹ️ Pull request: ${{ steps.cpr.outputs.pull-request-url }}."
+          else
+            echo "⚠️ No pull request created."
+          fi
