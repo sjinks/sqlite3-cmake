@@ -27,10 +27,8 @@ option(ENABLE_RTREE "Include rtree support" ON)
 option(ENABLE_SESSION "Enable the session extension" OFF)
 option(OMIT_DEPRECATED "Omit deprecated stuff" ON)
 
-add_library(sqlite3)
-add_library(sqlite3::sqlite3 ALIAS sqlite3)
-
-target_compile_features(sqlite3 PUBLIC c_std_11)
+add_library(SQLite3)
+add_library(SQLite::SQLite3 ALIAS SQLite3)
 
 include(CMakePackageConfigHelpers)
 include(CheckCSourceRuns)
@@ -45,7 +43,7 @@ include(GNUInstallDirs)
 FetchContent_Declare(sqlite3_ext URL ${SQLITE3_DOWNLOAD_URL} URL_HASH SHA3_256=${SQLITE3_SHA3_256})
 FetchContent_MakeAvailable(sqlite3_ext)
 
-target_include_directories(sqlite3
+target_include_directories(SQLite3
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${sqlite3_ext_SOURCE_DIR}>
@@ -65,7 +63,7 @@ function(check_and_define items check_function)
             check_function_exists(${item} ${item_upper})
         endif()
         if(${item_upper})
-            target_compile_definitions(sqlite3 PRIVATE "HAVE_${item_upper}=1")
+            target_compile_definitions(SQLite3 PRIVATE "HAVE_${item_upper}=1")
         endif()
     endforeach()
     unset(${items})
@@ -81,18 +79,18 @@ set(FUNCS fdatasync usleep fullfsync localtime_r gmtime_r strerror_r posix_fallo
 check_and_define(FUNCS check_function_exists)
 
 if(STRERROR_R)
-    target_compile_definitions(sqlite3 PRIVATE HAVE_STRERROR_R=1 HAVE_DECL_STRERROR_R=1)
+    target_compile_definitions(SQLite3 PRIVATE HAVE_STRERROR_R=1 HAVE_DECL_STRERROR_R=1)
     check_c_source_runs("
     #include <string.h>
     int main() {
         return (strerror_r(0, (char*)0, 0) == (char*)0);
     }" HAVE_GNU_STRERROR_R)
     if(HAVE_GNU_STRERROR_R)
-        target_compile_definitions(sqlite3 PRIVATE STRERROR_R_CHAR_P=1)
+        target_compile_definitions(SQLite3 PRIVATE STRERROR_R_CHAR_P=1)
     endif()
 endif()
 
-target_sources(sqlite3 PRIVATE ${sqlite3_ext_SOURCE_DIR}/sqlite3.c)
+target_sources(SQLite3 PRIVATE ${sqlite3_ext_SOURCE_DIR}/sqlite3.c)
 
 if(ENABLE_DYNAMIC_EXTENSIONS)
     check_library_exists(dl dlopen "" HAVE_DLOPEN)
@@ -115,7 +113,7 @@ if(ENABLE_FTS5)
     endif()
 endif()
 
-target_compile_definitions(sqlite3 PRIVATE 
+target_compile_definitions(SQLite3 PRIVATE
     $<IF:$<BOOL:${ENABLE_THREADSAFE}>,SQLITE_THREADSAFE=1 _REENTRANT=1,SQLITE_THREADSAFE=0>
     $<$<NOT:$<BOOL:${ENABLE_DYNAMIC_EXTENSIONS}>>:SQLITE_OMIT_LOAD_EXTENSION=1>
     $<$<BOOL:${ENABLE_MATH}>:SQLITE_ENABLE_MATH_FUNCTIONS>
@@ -129,20 +127,21 @@ target_compile_definitions(sqlite3 PRIVATE
     $<$<CONFIG:Debug>:SQLITE_DEBUG SQLITE_ENABLE_SELECTTRACE SQLITE_ENABLE_WHERETRACE>
 )
 
-target_compile_definitions(sqlite3 PRIVATE SQLITE_ENABLE_EXPLAIN_COMMENTS SQLITE_DQS=0 SQLITE_ENABLE_DBPAGE_VTAB SQLITE_ENABLE_STMTVTAB SQLITE_ENABLE_DBSTAT_VTAB)
+target_compile_definitions(SQLite3 PRIVATE SQLITE_ENABLE_EXPLAIN_COMMENTS SQLITE_DQS=0 SQLITE_ENABLE_DBPAGE_VTAB SQLITE_ENABLE_STMTVTAB SQLITE_ENABLE_DBSTAT_VTAB)
 
-target_link_libraries(sqlite3 
+target_link_libraries(SQLite3
     $<$<BOOL:${HAVE_DLOPEN}>:dl>
     $<$<OR:$<BOOL:${HAVE_CEIL_IN_M}>,${HAVE_LOG_IN_M}>:m>
 )
 
 set(SQLITE3_HEADERS ${sqlite3_ext_SOURCE_DIR}/sqlite3.h ${sqlite3_ext_SOURCE_DIR}/sqlite3ext.h)
-set_target_properties(sqlite3 PROPERTIES
+set_target_properties(SQLite3 PROPERTIES
     SOVERSION "0.8.6"
     PUBLIC_HEADER "${SQLITE3_HEADERS}"
+    OUTPUT_NAME ${PROJECT_NAME}
 )
 
-install(TARGETS sqlite3
+install(TARGETS SQLite3
     EXPORT sqlite3-targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -152,7 +151,7 @@ install(TARGETS sqlite3
 
 install(EXPORT sqlite3-targets
     FILE sqlite3-targets.cmake
-    NAMESPACE sqlite3::
+    NAMESPACE SQLite::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sqlite3
 )
 
