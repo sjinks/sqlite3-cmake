@@ -33,6 +33,12 @@ option(sqlite3_ENABLE_RTREE "Include rtree support" ON)
 option(sqlite3_ENABLE_SESSION "Enable the session extension" OFF)
 option(sqlite3_OMIT_DEPRECATED "Omit deprecated stuff" ON)
 
+if (sqlite3_BUILD_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS ON)
+else()
+    set(BUILD_SHARED_LIBS OFF)
+endif()
+
 add_library(SQLite3)
 add_library(SQLite::SQLite3 ALIAS SQLite3)
 
