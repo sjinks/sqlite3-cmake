@@ -148,7 +148,8 @@ target_link_libraries(SQLite3
 
 set(SQLITE3_HEADERS ${sqlite3_ext_SOURCE_DIR}/sqlite3.h ${sqlite3_ext_SOURCE_DIR}/sqlite3ext.h)
 set_target_properties(SQLite3 PROPERTIES
-    SOVERSION "0.8.6"
+    VERSION "0.8.6"
+    SOVERSION "0"
     PUBLIC_HEADER "${SQLITE3_HEADERS}"
     OUTPUT_NAME ${PROJECT_NAME}
 )
