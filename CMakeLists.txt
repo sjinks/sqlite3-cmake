@@ -16,16 +16,22 @@ if(POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
-option(ENABLE_THREADSAFE "Build a thread-safe library" OFF)
-option(ENABLE_DYNAMIC_EXTENSIONS "Support loadable extensions" ON)
-option(ENABLE_MATH "SQL math functions" ON)
-option(ENABLE_FTS3 "Include FTS3 support" OFF)
-option(ENABLE_FTS4 "Include FTS4 support" ON)
-option(ENABLE_FTS5 "Include FTS5 support" ON)
-option(ENABLE_RTREE "Include rtree support" ON)
-option(ENABLE_SESSION "Enable the session extension" OFF)
-option(OMIT_DEPRECATED "Omit deprecated stuff" ON)
+if(BUILD_SHARED_LIBS)
+    set(sqlite3_BUILD_SHARED_LIBS_DEFAULT ON)
+else()
+    set(sqlite3_BUILD_SHARED_LIBS_DEFAULT OFF)
+endif()
+
+option(sqlite3_BUILD_SHARED_LIBS "Build shared libraries" ${sqlite3_BUILD_SHARED_LIBS_DEFAULT})
+option(sqlite3_ENABLE_THREADSAFE "Build a thread-safe library" OFF)
+option(sqlite3_ENABLE_DYNAMIC_EXTENSIONS "Support loadable extensions" ON)
+option(sqlite3_ENABLE_MATH "SQL math functions" ON)
+option(sqlite3_ENABLE_FTS3 "Include FTS3 support" OFF)
+option(sqlite3_ENABLE_FTS4 "Include FTS4 support" ON)
+option(sqlite3_ENABLE_FTS5 "Include FTS5 support" ON)
+option(sqlite3_ENABLE_RTREE "Include rtree support" ON)
+option(sqlite3_ENABLE_SESSION "Enable the session extension" OFF)
+option(sqlite3_OMIT_DEPRECATED "Omit deprecated stuff" ON)
 
 add_library(SQLite3)
 add_library(SQLite::SQLite3 ALIAS SQLite3)
@@ -54,7 +60,7 @@ target_include_directories(SQLite3
 function(check_and_define items check_function)
     foreach(item ${${items}})
         string(TOUPPER ${item} item_upper)
-        string(REPLACE "." "_" item_upper ${item_upper})
+        string(MAKE_C_IDENTIFIER ${item_upper} item_upper)
         if(${check_function} STREQUAL "check_include_files")
             check_include_files(${item} ${item_upper})
         elseif(${check_function} STREQUAL "check_type_size")
@@ -97,6 +103,8 @@ if(ENABLE_DYNAMIC_EXTENSIONS)
     if(NOT HAVE_DLOPEN)
         message(FATAL "No dlopen() in dl")
     endif()
+else()
+    set(HAVE_DLOPEN OFF)
 endif()
 
 if(ENABLE_MATH)
@@ -104,6 +112,8 @@ if(ENABLE_MATH)
     if(NOT HAVE_CEIL_IN_M)
         message(FATAL "No ceil() in m")
     endif()
+else()
+    set(HAVE_CEIL_IN_M OFF)
 endif()
 
 if(ENABLE_FTS5)
@@ -111,18 +121,20 @@ if(ENABLE_FTS5)
     if(NOT HAVE_LOG_IN_M)
         message(FATAL "No log() in m")
     endif()
+else()
+    set(HAVE_LOG_IN_M OFF)
 endif()
 
 target_compile_definitions(SQLite3 PRIVATE
-    $<IF:$<BOOL:${ENABLE_THREADSAFE}>,SQLITE_THREADSAFE=1 _REENTRANT=1,SQLITE_THREADSAFE=0>
-    $<$<NOT:$<BOOL:${ENABLE_DYNAMIC_EXTENSIONS}>>:SQLITE_OMIT_LOAD_EXTENSION=1>
-    $<$<BOOL:${ENABLE_MATH}>:SQLITE_ENABLE_MATH_FUNCTIONS>
-    $<$<AND:$<BOOL:${ENABLE_FTS3}>,$<NOT:$<BOOL:${ENABLE_FTS4}>>>:SQLITE_ENABLE_FTS3>
-    $<$<BOOL:${ENABLE_FTS4}>:SQLITE_ENABLE_FTS4>
-    $<$<BOOL:${ENABLE_FTS5}>:SQLITE_ENABLE_FTS5>
-    $<$<BOOL:${ENABLE_RTREE}>:SQLITE_ENABLE_RTREE SQLITE_ENABLE_GEOPOLY>
-    $<$<BOOL:${ENABLE_SESSION}>:SQLITE_ENABLE_SESSION SQLITE_ENABLE_PREUPDATE_HOOK>
-    $<$<BOOL:${OMIT_DEPRECATED}>:SQLITE_OMIT_DEPRECATED>
+    $<IF:$<BOOL:${sqlite3_ENABLE_THREADSAFE}>,SQLITE_THREADSAFE=1 _REENTRANT=1,SQLITE_THREADSAFE=0>
+    $<$<NOT:$<BOOL:${sqlite3_ENABLE_DYNAMIC_EXTENSIONS}>>:SQLITE_OMIT_LOAD_EXTENSION=1>
+    $<$<BOOL:${sqlite3_ENABLE_MATH}>:SQLITE_ENABLE_MATH_FUNCTIONS>
+    $<$<AND:$<BOOL:${sqlite3_ENABLE_FTS3}>,$<NOT:$<BOOL:${sqlite3_ENABLE_FTS4}>>>:SQLITE_ENABLE_FTS3>
+    $<$<BOOL:${sqlite3_ENABLE_FTS4}>:SQLITE_ENABLE_FTS4>
+    $<$<BOOL:${sqlite3_ENABLE_FTS5}>:SQLITE_ENABLE_FTS5>
+    $<$<BOOL:${sqlite3_ENABLE_RTREE}>:SQLITE_ENABLE_RTREE SQLITE_ENABLE_GEOPOLY>
+    $<$<BOOL:${sqlite3_ENABLE_SESSION}>:SQLITE_ENABLE_SESSION SQLITE_ENABLE_PREUPDATE_HOOK>
+    $<$<BOOL:${sqlite3_OMIT_DEPRECATED}>:SQLITE_OMIT_DEPRECATED>
     $<$<BOOL:${HAVE_DLOPEN}>:HAVE_DLOPEN=1>
     $<$<CONFIG:Debug>:SQLITE_DEBUG SQLITE_ENABLE_SELECTTRACE SQLITE_ENABLE_WHERETRACE>
 )
@@ -131,7 +143,7 @@ target_compile_definitions(SQLite3 PRIVATE SQLITE_ENABLE_EXPLAIN_COMMENTS SQLITE
 
 target_link_libraries(SQLite3
     $<$<BOOL:${HAVE_DLOPEN}>:dl>
-    $<$<OR:$<BOOL:${HAVE_CEIL_IN_M}>,${HAVE_LOG_IN_M}>:m>
+    $<$<OR:$<BOOL:${HAVE_CEIL_IN_M}>,$<BOOL:${HAVE_LOG_IN_M}>>:m>
 )
 
 set(SQLITE3_HEADERS ${sqlite3_ext_SOURCE_DIR}/sqlite3.h ${sqlite3_ext_SOURCE_DIR}/sqlite3ext.h)
