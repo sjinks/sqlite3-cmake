@@ -11,7 +11,7 @@ include(FetchContent)
 FetchContent_Declare(sqlite3 GIT_REPOSITORY https://github.com/sjinks/sqlite3-cmake GIT_TAG v3.45.1)
 FetchContent_MakeAvailable(sqlite3)
 
-target_link_libraries(mytarget sqlite3::sqlite3)
+target_link_libraries(mytarget SQLite::SQLite3)
 ```
 
 ## Usage with [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake)
