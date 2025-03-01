@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(SQLITE3_VERSION "3.48.0")
-set(SQLITE3_DOWNLOAD_URL "https://sqlite.org/2025/sqlite-amalgamation-3480000.zip")
-set(SQLITE3_SHA3_256 "d0a5b50bed48f7aa9d33d3dd80ab01fda0d4c584ffb4771766a1ea04262d5170")
+set(SQLITE3_VERSION "3.49.0")
+set(SQLITE3_DOWNLOAD_URL "https://sqlite.org/2025/sqlite-amalgamation-3490000.zip")
+set(SQLITE3_SHA3_256 "138b6922eb274c953c9d8f3249c39706ad3e40f3eef5d81bbeb73509b41f52c9")
 
 project(sqlite3 VERSION ${SQLITE3_VERSION} LANGUAGES C)
 
