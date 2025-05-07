@@ -6,7 +6,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^README\\.md$"],
+      "managerFilePatterns": [
+        "/^README\\.md$/"
+      ],
       "matchStrings": [
         "https://github\\.com/(?<depName>[^{}()\\[\\]]+?)/releases/download/(?<currentValue>[^/]+?)/"
       ],
