@@ -17,7 +17,7 @@ target_link_libraries(mytarget SQLite::SQLite3)
 ## Usage with [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake)
 
 ```cmake
-file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.40.8/CPM.cmake ${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
+file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.0/CPM.cmake ${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
 include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
 
 CPMAddPackage("gh:sjinks/sqlite3-cmake@3.49.1")
