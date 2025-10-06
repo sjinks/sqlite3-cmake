@@ -22,6 +22,18 @@ else()
     set(sqlite3_BUILD_SHARED_LIBS_DEFAULT OFF)
 endif()
 
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(_default_install ON)
+else()
+    set(_default_install OFF)
+endif()
+
+option(${PROJECT_NAME}_INSTALL
+    "Enable install rules for ${PROJECT_NAME} (default: ${_default_install})"
+    ${_default_install})
+
+
 option(sqlite3_BUILD_SHARED_LIBS "Build shared libraries" ${sqlite3_BUILD_SHARED_LIBS_DEFAULT})
 option(sqlite3_ENABLE_THREADSAFE "Build a thread-safe library" OFF)
 option(sqlite3_ENABLE_DYNAMIC_EXTENSIONS "Support loadable extensions" ON)
@@ -160,28 +172,30 @@ set_target_properties(SQLite3 PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME}
 )
 
-install(TARGETS SQLite3
-    EXPORT sqlite3-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+if(${PROJECT_NAME}_INSTALL)
+    install(TARGETS SQLite3
+        EXPORT sqlite3-targets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
 
-install(EXPORT sqlite3-targets
-    FILE sqlite3-targets.cmake
-    NAMESPACE SQLite::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sqlite3
-)
+    install(EXPORT sqlite3-targets
+        FILE sqlite3-targets.cmake
+        NAMESPACE SQLite::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sqlite3
+    )
 
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/sqlite3-config-version.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/sqlite3-config-version.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+    )
 
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/sqlite3-config-version.cmake
-    ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3-config.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sqlite3
-)
+    install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/sqlite3-config-version.cmake
+        ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3-config.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sqlite3
+    )
+endif()
