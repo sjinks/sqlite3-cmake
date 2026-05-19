@@ -33,7 +33,7 @@ option(sqlite3_ENABLE_RTREE "Include rtree support" ON)
 option(sqlite3_ENABLE_SESSION "Enable the session extension" OFF)
 option(sqlite3_OMIT_DEPRECATED "Omit deprecated stuff" ON)
 
-if (sqlite3_BUILD_SHARED_LIBS)
+if(sqlite3_BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS ON)
 else()
     set(BUILD_SHARED_LIBS OFF)
@@ -57,11 +57,19 @@ FetchContent_MakeAvailable(sqlite3_ext)
 
 target_include_directories(SQLite3
     PUBLIC
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${sqlite3_ext_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${sqlite3_ext_SOURCE_DIR}>
     PRIVATE
-        ${sqlite3_ext_SOURCE_DIR}
+    ${sqlite3_ext_SOURCE_DIR}
 )
+
+if(BUILD_SHARED_LIBS)
+    if(WIN32)
+        target_compile_definitions(SQLite3 PRIVATE "SQLITE_API=__declspec(dllexport)")
+    else()
+        target_compile_definitions(SQLite3 PRIVATE "SQLITE_API=__attribute__((visibility(\"default\")))")
+    endif()
+endif()
 
 function(check_and_define items check_function)
     foreach(item ${${items}})
@@ -96,7 +104,7 @@ if(STRERROR_R)
     #include <string.h>
     int main() {
         return (strerror_r(0, (char*)0, 0) == (char*)0);
-    }" HAVE_GNU_STRERROR_R)
+    }"        HAVE_GNU_STRERROR_R)
     if(HAVE_GNU_STRERROR_R)
         target_compile_definitions(SQLite3 PRIVATE STRERROR_R_CHAR_P=1)
     endif()
